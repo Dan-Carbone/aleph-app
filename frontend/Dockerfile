@@ -1,25 +1,18 @@
-# Stage 1: Build the React Application
-FROM node:20-alpine AS builder
+# Frontend Dockerfile for Aleph-App (React 18 + Vite)
+FROM node:20-alpine
 
+# Set working directory inside the container
 WORKDIR /app
 
+# Copy package manifest and install dependencies inside the container
 COPY package*.json ./
 RUN npm install
 
-ARG REACT_APP_API_URL
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-
+# Copy the rest of the frontend source code (including index.html and vite.config.js)
 COPY . .
-RUN npm run build
 
-# Stage 2: Serve with lightweight web server (serve)
-FROM node:20-alpine
+# Expose Vite port
+EXPOSE 5173
 
-WORKDIR /app
-RUN npm install -g serve
-
-COPY --from=builder /app/build ./build
-
-EXPOSE 3000
-
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Start Vite development server exposed to the Docker network
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
